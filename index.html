@@ -1,185 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Power BI Dashboard</title>
+  <meta charset="UTF-8"/>
+  <title>aACE Bridge</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f3f2f1;
-      height: 100vh;
-      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; flex-direction: column; gap: 16px;
     }
-
-    #view-login {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      gap: 16px;
+    .card {
+      background: white; border-radius: 8px;
+      padding: 32px 40px; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      max-width: 360px; width: 90%;
     }
-    #view-login h2 { font-size: 20px; color: #323130; font-weight: 600; }
-    #view-login p  { font-size: 14px; color: #605e5c; }
-    #btn-login {
-      background: #0078d4; color: white; border: none;
-      padding: 10px 28px; font-size: 15px;
-      border-radius: 4px; cursor: pointer; font-weight: 500;
-    }
-    #btn-login:hover { background: #106ebe; }
-
-    #view-iframe-login {
-      display: none;
-      flex-direction: column;
-      height: 100vh;
-    }
-    #view-iframe-login header {
+    .logo { font-size: 32px; margin-bottom: 12px; }
+    h2 { font-size: 18px; color: #323130; font-weight: 600; margin-bottom: 6px; }
+    p  { font-size: 13px; color: #605e5c; margin-bottom: 20px; }
+    .btn {
+      display: inline-block; padding: 9px 24px;
       background: #0078d4; color: white;
-      padding: 10px 16px; font-size: 14px; font-weight: 500;
-      display: flex; align-items: center; justify-content: space-between;
+      border: none; border-radius: 4px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; text-decoration: none;
     }
-    #login-frame {
-      flex: 1; border: none; width: 100%;
+    .btn:hover { background: #106ebe; }
+    .module-tag {
+      display: inline-block; padding: 2px 10px;
+      background: #e1dfdd; border-radius: 12px;
+      font-size: 12px; color: #323130; margin-bottom: 16px;
     }
-
-    #view-loading {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      gap: 16px;
-      color: #605e5c; font-size: 14px;
-    }
-    .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid #e1dfdd;
-      border-top-color: #0078d4;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #view-report {
-      display: none;
-      height: 100vh;
-    }
-    #report-frame {
-      width: 100%; height: 100%; border: none;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Pantalla 1: Botón de login -->
-  <div id="view-login">
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="48" rx="8" fill="#F2C811"/>
-      <path d="M14 34V14h8l4 8 4-8h8v20h-5V22l-7 12-7-12v12H14z" fill="#1a1a1a"/>
-    </svg>
-    <h2>Power BI Dashboard</h2>
-    <p>Inicia sesión con tu cuenta Microsoft para continuar</p>
-    <button id="btn-login" onclick="showLoginFrame()">Iniciar sesión</button>
-  </div>
-
-  <!-- Pantalla 2: iframe con login de Microsoft -->
-  <div id="view-iframe-login">
-    <header>
-      <span>Iniciando sesión con Microsoft</span>
-      <span style="font-size:12px; opacity:0.8;">Completa el login y el reporte cargará automáticamente</span>
-    </header>
-    <iframe id="login-frame" src="" allow="identity-credentials-get"></iframe>
-  </div>
-
-  <!-- Pantalla 3: Loading -->
-  <div id="view-loading">
-    <div class="spinner"></div>
-    <span>Cargando reporte...</span>
-  </div>
-
-  <!-- Pantalla 4: Reporte -->
-  <div id="view-report">
-    <iframe id="report-frame" src="" allowfullscreen="true"></iframe>
-  </div>
-
-  <script>
-    const REPORT_URL = "https://app.powerbi.com/reportEmbed?reportId=878a9a0a-079f-4813-b730-99d9ef4b1e42&groupId=me&ctid=52ccb498-ebae-48e6-b328-8c9120c836d5&autoAuth=true";
-
-    const LOGIN_URL = "https://login.microsoftonline.com/52ccb498-ebae-48e6-b328-8c9120c836d5/oauth2/v2.0/authorize"
-      + "?client_id=00000009-0000-0000-c000-000000000000"
-      + "&response_type=token"
-      + "&scope=https://analysis.windows.net/powerbi/api/Report.Read.All openid profile"
-      + "&redirect_uri=" + encodeURIComponent(window.location.origin + window.location.pathname)
-      + "&response_mode=fragment"
-      + "&prompt=login";
-
-    function show(id) {
-      ["view-login","view-iframe-login","view-loading","view-report"]
-        .forEach(v => document.getElementById(v).style.display = "none");
-      document.getElementById(id).style.display = "flex";
-    }
-
-    function showLoginFrame() {
-      show("view-iframe-login");
-      document.getElementById("login-frame").src = LOGIN_URL;
-    }
-
-    function loadReport() {
-      show("view-loading");
-      const frame = document.getElementById("report-frame");
-      frame.src = REPORT_URL;
-      frame.onload = () => {
-        show("view-report");
-        document.getElementById("view-report").style.display = "block";
-      };
-    }
-
-    // Detectar si venimos de redirect de Microsoft con token
-    function checkAuth() {
-      const hash = window.location.hash;
-      if (hash && hash.includes("access_token")) {
-        sessionStorage.setItem("pbi_authed", "true");
-        history.replaceState(null, "", window.location.pathname);
-        loadReport();
-      } else if (sessionStorage.getItem("pbi_authed") === "true") {
-        loadReport();
-      }
-      // else: mostrar pantalla de login
-    }
-
-    // Escuchar mensajes del iframe de login (por si redirige al mismo origen)
-    window.addEventListener("message", function(e) {
-      if (e.data && e.data === "pbi_login_done") {
-        sessionStorage.setItem("pbi_authed", "true");
-        loadReport();
-      }
-    });
-
-    // Vigilar cambios de URL en el iframe de login
-    setInterval(function() {
-      try {
-        const loginFrame = document.getElementById("login-frame");
-        if (!loginFrame.src) return;
-        const frameUrl = loginFrame.contentWindow.location.href;
-        // Si el iframe regresó a nuestra página con token
-        if (frameUrl.includes("access_token")) {
-          sessionStorage.setItem("pbi_authed", "true");
-          loadReport();
-        }
-        // Si el iframe llegó a powerbi.com, el login fue exitoso
-        if (frameUrl.includes("powerbi.com") && !frameUrl.includes("login")) {
-          sessionStorage.setItem("pbi_authed", "true");
-          loadReport();
-        }
-      } catch(err) {
-        // Cross-origin — normal durante el login, ignorar
-      }
-    }, 1000);
-
-    checkAuth();
-  </script>
-
-</body>
-</html>
+    #status { font-size: 12px; color:
